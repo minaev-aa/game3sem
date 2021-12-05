@@ -10,14 +10,14 @@
 float speed_player = 0.1;
 int wind_x_size = 1000;
 int wind_y_size = 700;
-float rad_ball = 20;
+float rad_ball = 20; //20
 float dt = 0.01;
-float betta_tormoz = 0.1;
+float betta_tormoz = 0.1; //0.1
 sf::RenderWindow window(sf::VideoMode(wind_x_size, wind_y_size), "SFML works!");
 
 float field_y_size = 100; // в процентах от wind_y_size
 float field_x_size = 0.4 * field_y_size;
-//sf::RectangleShape field;
+
 
 template <typename T>
 std::vector<T> operator+(std::vector<T> vec1, std::vector<T> vec2)
@@ -112,7 +112,6 @@ public:
         field_x2 = field.getPosition().x + field.getSize().x;
         field_y1 = field.getPosition().y;
         field_y2 = field.getPosition().y + field.getSize().y;
-        std::cout << "field_x1 " << field_x1;
     };
 
     std::vector<float> ret_pos()
@@ -183,8 +182,7 @@ public:
             {
                 std::vector<float> x1 = pos;
                 std::vector<float> x2 = ball2.ret_pos();
-                //print_vec(x1 - x2);
-                //std::cout << " " << norm_squared(x1 - x2) << "\n";
+                
                 if (norm(x1 - x2) <= 2 * rad)
                 {
                     std::cout << "COLAPSE";
@@ -199,8 +197,11 @@ public:
         std::vector<float> V1 = V;
         std::vector<float> V2 = ball2.ret_speed();
         std::vector<float> x1 = pos;
-        std::vector<float> x2 = ball2.ret_pos();  
-        V = V - skalar_prod(V1 - V2, x1 - x2) / norm_squared(x1 - x2) * (x1 - x2);
+        std::vector<float> x2 = ball2.ret_pos(); 
+        if (skalar_prod(V2 - V1, x1 - x2) >= 0)
+        {
+            V = V - skalar_prod(V1 - V2, x1 - x2) / norm_squared(x1 - x2) * (x1 - x2);
+        }
     }
 
     void set_V(std::vector<float> new_V )
