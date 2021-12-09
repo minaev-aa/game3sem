@@ -100,7 +100,7 @@ public:
         shape.setPosition(pos);
         shape.setSize(sf::Vector2f(200.f, 50.f));
         shape.setFillColor(sf::Color(0, 0, 0, 150));
-        font.loadFromFile("C:/Users/ponam/Documents/PFAgoraSlabPro.ttf");
+        font.loadFromFile("C:/Users/1/C++/game/game/game/Abbieshire.ttf");
         text.setFont(font);
         text.setCharacterSize(30);
         text.setString(str);
@@ -232,7 +232,7 @@ public:
     Menu menu;
 
     GUI() {
-        font.loadFromFile("C:/Users/ponam/Documents/PFAgoraSlabPro.ttf");
+        font.loadFromFile("C:/Users/1/C++/game/game/game/Abbieshire.ttf");
 
         player1.points = 0;
         player1.number = 0;
@@ -334,7 +334,6 @@ public:
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
-
         if (gamePaused)
         {
             target.draw(menu);
@@ -483,51 +482,61 @@ public:
     }
 };
 
-
-
-
-int main()
+class Game
 {
-   
+private:
     sf::Vector2f		m_mouse;
     sf::RectangleShape field;
-    field.setSize(sf::Vector2f(field_x_size/100 * wind_x_size, field_y_size / 100 * wind_y_size));
-    field.setPosition(wind_x_size / 2 - field_x_size/100 * wind_x_size / 2, 0);
-    
-    std::vector <float> mouse_pos{ -10, -10 };
+    bool restartGame = false;
+    std::vector <float> mouse_pos;
     int selected_ball = -1; //значение -1, если не выбран.
     float force_of_beat = 0;
-
-    std::vector<float> pos1{ 300, 100 };
-    std::vector<float> V1{ 10, 10 };
-    Ball ball1(pos1, field);
-    ball1.set_V(V1);
-    std::vector<float> pos2{ 400, 50 };
-    std::vector<float> V2{ 5, 10 };
-    Ball ball2(pos2, field);
-    ball2.set_V(V2);
-    std::vector<float> pos3{ 400, 200 };
-    std::vector<float> V3{ 0, -10 };
-    Ball ball3(pos3, field);
-    ball3.set_V(V3);
-    std::vector<float> pos4{ 400, 600 };
-    std::vector<float> V4{ 300, -100 };
-    Ball ball4(pos4, field);
-    ball4.set_V(V4);
-
-    std::vector<Ball> balls = { ball1, ball2, ball3, ball4 };
-    bool restartGame = false;
+    std::vector<Ball> balls;
+    //bool restartGame; //= false;
     GUI* gui;
-    gui = new GUI();
-    while (window->isOpen())
+    std::vector<Ball> start_balls;
+    sf::Event   sfmlEvent;
+    
+public:
+    Game()
     {
-        
-        if (!gui->gamePaused){
-	        std::vector<Ball> new_balls;
-	        for (Ball main_ball : balls)
-	        {
-	            main_ball.move(balls);
-	            new_balls.push_back(main_ball);
+        field.setSize(sf::Vector2f(field_x_size / 100 * wind_x_size, field_y_size / 100 * wind_y_size));
+        field.setPosition(wind_x_size / 2 - field_x_size / 100 * wind_x_size / 2, 0);
+
+        mouse_pos = std::vector <float>{ -10, -10 };
+        //restartGame = false;
+
+        gui = new GUI();
+
+        std::vector<float> pos1{ 300, 100 };
+        std::vector<float> V1{ 10, 10 };
+        Ball ball1(pos1, field);
+        ball1.set_V(V1);
+        std::vector<float> pos2{ 400, 50 };
+        std::vector<float> V2{ 5, 10 };
+        Ball ball2(pos2, field);
+        ball2.set_V(V2);
+        std::vector<float> pos3{ 400, 200 };
+        std::vector<float> V3{ 0, -10 };
+        Ball ball3(pos3, field);
+        ball3.set_V(V3);
+        std::vector<float> pos4{ 400, 600 };
+        std::vector<float> V4{ 300, -100 };
+        Ball ball4(pos4, field);
+        ball4.set_V(V4);
+
+        balls = { ball1, ball2, ball3, ball4 };
+        start_balls = balls;
+    };
+
+    void render()
+    {
+        if (!gui->gamePaused) {
+            std::vector<Ball> new_balls;
+            for (Ball main_ball : balls)
+            {
+                main_ball.move(balls);
+                new_balls.push_back(main_ball);
                 /*if (x)  //Добавить булевскую элемент забития мяча
                 {
                     gui->addPoints(gui->getCurrentPlayer());
@@ -537,24 +546,26 @@ int main()
                 {
                     gui->setCurrentPlayer(1 - gui->getCurrentPlayer().number);
                 }
-	        }
-	        balls = new_balls;
+            }
+            balls = new_balls;
             window->clear(sf::Color(75, 0, 163));
-	        window->draw(field);
+            window->draw(field);
             for (Ball ball : balls)
             {
                 ball.draw();
             }
         }
+    }
 
-        if (restartGame)
-        {
-            gui->restart();
-            restartGame = false;
-            //надо всё вернуть в исходное
-        }
+    void restart_game()
+    {
+        gui->restart();
+        restartGame = false;
+        balls = start_balls;
+    }
 
-        sf::Event   sfmlEvent;
+    void event_update()
+    {
         while (window->pollEvent(sfmlEvent))
         {
             //можно добавить управление шариком
@@ -607,12 +618,34 @@ int main()
                 }
             }
         }
-
-		gui->update(window, gui->gamePaused, restartGame, m_mouse, sfmlEvent);
-        window->draw(*gui);
-        
-        window->display();
     }
+
+    void manager()
+    {
+        while (window->isOpen())
+        {
+            render();
+
+            if (restartGame)
+            {
+                restart_game();
+            }
+            
+            event_update();
+
+            gui->update(window, gui->gamePaused, restartGame, m_mouse, sfmlEvent);
+            window->draw(*gui);
+
+            window->display();
+        }
+    }
+};
+
+
+int main()
+{
+    Game game = Game();
+    game.manager();
 
     return 0;
 }

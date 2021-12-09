@@ -17,3 +17,5 @@
 *.idb
 *.pdb
 *.tlog
+*.ttf
+*.enc
