@@ -26,6 +26,8 @@ sf::RenderWindow* window = new sf::RenderWindow(videoMode, "Billiarrd", sf::Styl
 float field_y_size = 100; // a i?ioaioao io wind_y_size
 float field_x_size = 0.4 * field_y_size;
 
+int number_balls_first_rad = 3;
+
 
 template <typename T>
 std::vector<T> operator+(std::vector<T> vec1, std::vector<T> vec2)
@@ -101,7 +103,7 @@ public:
         shape.setPosition(pos);
         shape.setSize(sf::Vector2f(200.f, 50.f));
         shape.setFillColor(sf::Color(0, 0, 0, 150));
-        font.loadFromFile("C:/Users/snigu/Downloads/SFML_billiard-master/Abbieshire.ttf");
+        font.loadFromFile("./Abbieshire.ttf");
         text.setFont(font);
         text.setCharacterSize(30);
         text.setString(str);
@@ -233,7 +235,7 @@ public:
     Menu menu;
 
     GUI() {
-        font.loadFromFile("C:/Users/snigu/Downloads/SFML_billiard-master/Abbieshire.ttf");
+        font.loadFromFile("./Abbieshire.ttf");
 
         player1.points = 0;
         player1.number = 0;
@@ -451,7 +453,7 @@ public:
                 std::vector<float> x1 = pos;
                 std::vector<float> x2 = ball2.ret_pos();
 
-                if (norm(x1 - x2) <= 2 * rad)
+                if (norm(x1 - x2) < 2 * rad)
                 {
                     std::cout << "COLAPSE";
                     colapse_ball(ball2);
@@ -481,6 +483,12 @@ public:
     {
         V = new_V;
     }
+
+    void set_color(sf::Color col2)
+    {
+        color = col2;
+        shape.setFillColor(color);
+    }
 };
 
 class Game
@@ -509,24 +517,37 @@ public:
 
         gui = new GUI();
 
-        std::vector<float> pos1{ 300, 100 };
-        std::vector<float> V1{ 10, 10 };
+        std::vector<float> pos1{ float(wind_x_size) / 2, float(wind_y_size) / 2 };
         Ball ball1(pos1, field);
-        ball1.set_V(V1);
-        std::vector<float> pos2{ 400, 50 };
-        std::vector<float> V2{ 5, 10 };
-        Ball ball2(pos2, field);
-        ball2.set_V(V2);
-        std::vector<float> pos3{ 400, 200 };
-        std::vector<float> V3{ 0, -10 };
-        Ball ball3(pos3, field);
-        ball3.set_V(V3);
-        std::vector<float> pos4{ 400, 600 };
-        std::vector<float> V4{ 300, -100 };
-        Ball ball4(pos4, field);
-        ball4.set_V(V4);
+        ball1.set_color(sf::Color::Black);
+        balls.push_back(ball1);
 
-        balls = { ball1, ball2, ball3, ball4 };
+        for (int i = 0; i < number_balls_first_rad; i++)
+        {
+            float y = float(wind_y_size) / 2 -  rad_ball* pow(3.0,0.5) * i - i - 100;
+            for (int j = 0; j <= i; j++)
+            {
+                if (i % 2 == 1)
+                {
+                    float x = float(wind_x_size) / 2 - (i+1) / 2 * rad_ball*2 + rad_ball + j * 2 * rad_ball;
+                    std::vector<float> pos{ x,y };
+                    Ball ball(pos, field);
+                    balls.push_back(ball);
+                    
+                }
+                else
+                {
+                    float x = float(wind_x_size) / 2 - (i) / 2 * rad_ball*2 + j * 2 * rad_ball;
+                    std::vector<float> pos{ x,y };
+                    Ball ball(pos, field);
+                    balls.push_back(ball);
+                    
+                }
+                
+            }
+        }
+
+
         start_balls = balls;
     };
 
