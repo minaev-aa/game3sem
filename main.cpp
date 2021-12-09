@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <math.h>
 #include <vector>
+#include <cmath>
 //#include "settings.cpp"
 
 
@@ -14,6 +15,8 @@ float rad_ball = 20; //20
 float dt = 0.01;
 float betta_tormoz = 0.1; //0.1
 float tormoz_V = 0.8;
+float time_of_full_beat = 1.0;
+float max_force_of_beat = 100;
 sf::RenderWindow window(sf::VideoMode(wind_x_size, wind_y_size), "SFML works!");
 
 float field_y_size = 100; // в процентах от wind_y_size
@@ -213,6 +216,11 @@ public:
     {
         V = new_V;
     }
+
+    bool is_clicked(std::vector <float> mouse_pos)
+    {
+        return norm(pos - mouse_pos) < rad_ball;
+    }
 };
 
 int main()
@@ -220,6 +228,10 @@ int main()
     sf::RectangleShape field;
     field.setSize(sf::Vector2f(field_x_size/100 * wind_x_size, field_y_size / 100 * wind_y_size));
     field.setPosition(wind_x_size / 2 - field_x_size/100 * wind_x_size / 2, 0);
+
+    std::vector <float> mouse_pos{ -10, -10 };
+    int selected_ball = -1; //значение -1, если не выбран.
+    float force_of_beat = 0;
     
     std::vector<float> pos1{ 300, 100 };
     std::vector<float> V1{ 10, 10 };
@@ -247,8 +259,37 @@ int main()
         {
             if (event.type == sf::Event::Closed)
                 window.close();
+            
         }
 
+        if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+        {
+            if (force_of_beat < time_of_full_beat){
+                force_of_beat += dt;
+            }
+   
+            for (int i = 0; i < balls.size(); i++)
+            {
+                sf::Vector2i pos_m = sf::Mouse::getPosition(window);
+                mouse_pos[0] = pos_m.x;
+                mouse_pos[1] = pos_m.y;
+                if (balls[i].is_clicked(mouse_pos)) { selected_ball = i; }
+            }
+        }
+        else
+        {
+            if (selected_ball != -1) 
+            {
+                std::cout << "Beat!";
+                std::vector <float> beat{ 0,0 };
+                beat = ((balls[selected_ball].ret_pos() - mouse_pos) * (1/norm(balls[selected_ball].ret_pos() - mouse_pos))) * force_of_beat * max_force_of_beat;
+                balls[selected_ball].set_V(balls[selected_ball].ret_speed() + beat);
+            //beat
+            }
+                
+            selected_ball = -1;
+            force_of_beat = 0;
+        }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
         {
             //pl.move(speed_player*(-1), 0);
