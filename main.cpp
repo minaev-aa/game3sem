@@ -197,6 +197,7 @@ public:
 
     virtual void update(sf::RenderWindow* window, bool& isPaused, bool& isRestart, sf::Vector2f mouse, sf::Event event)
     {
+    if (isPaused) {
         for (auto btn : buttons)
         {
             if (btn.first == Button::EXIT && btn.second->pressed)
@@ -213,6 +214,7 @@ public:
             }
             btn.second->update(mouse, event);
         }
+	}
     }
 
 private:
