@@ -4,6 +4,7 @@
 #include <math.h>
 #include <vector>
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 //#include <SFML/System.hpp>
 //#include <SFML/Window.hpp>
 //#include "settings.cpp"
@@ -22,7 +23,7 @@ sf::VideoMode		videoMode = sf::VideoMode(wind_x_size, wind_y_size);
 sf::RenderWindow* window = new sf::RenderWindow(videoMode, "Billiarrd", sf::Style::Default);
 
 
-float field_y_size = 100; // в процентах от wind_y_size
+float field_y_size = 100; // a i?ioaioao io wind_y_size
 float field_x_size = 0.4 * field_y_size;
 
 
@@ -100,7 +101,7 @@ public:
         shape.setPosition(pos);
         shape.setSize(sf::Vector2f(200.f, 50.f));
         shape.setFillColor(sf::Color(0, 0, 0, 150));
-        font.loadFromFile("C:/Users/1/C++/game/game/game/Abbieshire.ttf");
+        font.loadFromFile("C:/Users/snigu/Downloads/SFML_billiard-master/Abbieshire.ttf");
         text.setFont(font);
         text.setCharacterSize(30);
         text.setString(str);
@@ -232,7 +233,7 @@ public:
     Menu menu;
 
     GUI() {
-        font.loadFromFile("C:/Users/1/C++/game/game/game/Abbieshire.ttf");
+        font.loadFromFile("C:/Users/snigu/Downloads/SFML_billiard-master/Abbieshire.ttf");
 
         player1.points = 0;
         player1.number = 0;
@@ -351,14 +352,14 @@ public:
 class Ball
 {
 private:
-    std::vector<float> pos = std::vector<float>(2); // вектор координат центра шарика
-    std::vector<float> V = std::vector<float>(2);   // вектор скорости шарика
-    std::vector<float> a = std::vector<float>(2);   // вектор ускорения шарика
+    std::vector<float> pos = std::vector<float>(2); // aaeoi? eii?aeiao oaio?a oa?eea
+    std::vector<float> V = std::vector<float>(2);   // aaeoi? nei?inoe oa?eea
+    std::vector<float> a = std::vector<float>(2);   // aaeoi? onei?aiey oa?eea
     float rad = rad_ball;
     sf::CircleShape shape;
     sf::Color color;
 
-    sf::RectangleShape field;  // поле от которого отскакивает шарик
+    sf::RectangleShape field;  // iiea io eioi?iai ioneaeeaaao oa?ee
     float field_x1;
     float field_x2;
     float field_y1;
@@ -489,7 +490,7 @@ private:
     sf::RectangleShape field;
     bool restartGame = false;
     std::vector <float> mouse_pos;
-    int selected_ball = -1; //значение -1, если не выбран.
+    int selected_ball = -1; //cia?aiea -1, anee ia aua?ai.
     float force_of_beat = 0;
     std::vector<Ball> balls;
     //bool restartGame; //= false;
@@ -537,7 +538,7 @@ public:
             {
                 main_ball.move(balls);
                 new_balls.push_back(main_ball);
-                /*if (x)  //Добавить булевскую элемент забития мяча
+                /*if (x)  
                 {
                     gui->addPoints(gui->getCurrentPlayer());
                     x = false;
@@ -548,13 +549,13 @@ public:
                 }
             }
             balls = new_balls;
-            window->clear(sf::Color(75, 0, 163));
+            window->clear(sf::Color(75, 0, 163));}
             window->draw(field);
             for (Ball ball : balls)
             {
                 ball.draw();
             }
-        }
+        
     }
 
     void restart_game()
@@ -568,7 +569,6 @@ public:
     {
         while (window->pollEvent(sfmlEvent))
         {
-            //можно добавить управление шариком
             switch (sfmlEvent.type)
             {
             case sf::Event::Closed:
@@ -577,7 +577,6 @@ public:
             case sf::Event::KeyPressed:
                 if (sfmlEvent.key.code == sf::Keyboard::Escape)
                 {
-                    std::cout << 45678;
                     gui->gamePaused = 1 - gui->gamePaused;
                 }
 
@@ -586,7 +585,7 @@ public:
                 m_mouse.y = sfmlEvent.mouseMove.y;
 
             case sf::Event::MouseButtonPressed:
-                if (true) {
+                if (!gui->gamePaused) {
                     if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
                     {
                         if (force_of_beat < time_of_full_beat) {
@@ -595,7 +594,6 @@ public:
 
                         for (int i = 0; i < balls.size(); i++)
                         {
-                            //sf::Vector2i pos_m = sf::Mouse::getPosition(window);
                             mouse_pos[0] = m_mouse.x;
                             mouse_pos[1] = m_mouse.y;
                             if (balls[i].is_clicked(mouse_pos)) { selected_ball = i; }
