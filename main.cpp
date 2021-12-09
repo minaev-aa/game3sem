@@ -13,6 +13,7 @@ int wind_y_size = 700;
 float rad_ball = 20; //20
 float dt = 0.01;
 float betta_tormoz = 0.1; //0.1
+float tormoz_V = 0.8;
 sf::RenderWindow window(sf::VideoMode(wind_x_size, wind_y_size), "SFML works!");
 
 float field_y_size = 100; // в процентах от wind_y_size
@@ -137,6 +138,10 @@ public:
         interaction(balls);
         shape.setPosition(pos[0] - rad, pos[1] - rad);
         V = V + a * dt;
+        if (norm(V) < tormoz_V) {
+            V[0] = 0;
+            V[1] = 0;
+        }
 
         pos = pos + V * dt;
     };
@@ -185,7 +190,7 @@ public:
                 
                 if (norm(x1 - x2) <= 2 * rad)
                 {
-                    std::cout << "COLAPSE";
+                    //std::cout << "COLAPSE";
                     colapse_ball(ball2);
                 }
             }
