@@ -1,16 +1,12 @@
 ﻿#include <algorithm>
 #include <array>
 #include <iostream>
-#include <math.h>
-#include <stdlib.h> 
+#include <cmath>
 #include <vector>
 #include <SFML/Graphics.hpp>
-#include <SFML/Audio.hpp>
 #include <SFML/Audio/Sound.hpp>
 #include <SFML/Audio/SoundBuffer.hpp>
-//#include <SFML/System.hpp>
-//#include <SFML/Window.hpp>
-//#include "settings.cpp"
+
 
 bool gameover = false;
 float speed_player = 0.1f;
@@ -27,9 +23,9 @@ sf::VideoMode		videoMode = sf::VideoMode(wind_x_size, wind_y_size);
 sf::RenderWindow* window = new sf::RenderWindow(videoMode, "Billiarrd", sf::Style::Default);
 
 
-float field_y_size = 100; // a i?ioaioao io wind_y_size
+float field_y_size = 100; 
 float field_x_size = 0.4 * field_y_size;
-int number_balls_first_rad = 1;
+int number_balls_first_rad = 5;
 
 template <typename T>
 std::vector<T> operator+(std::vector<T> vec1, std::vector<T> vec2)
@@ -80,7 +76,6 @@ T norm_squared(std::vector<T> vec)
     return skalar_prod(vec, vec);
 }
 
-//template <typename T>
 float norm(std::vector<float> vec)
 {
     return sqrt(norm_squared(vec));
@@ -259,7 +254,6 @@ public:
 
     GUI() {
         font.loadFromFile("C:/Users/snigu/Downloads/SFML_billiard-master/Abbieshire.ttf");
-
         player1.points = 0;
         player1.number = 0;
         player1.numberText.setFont(font);
@@ -280,7 +274,6 @@ public:
         player2.pointsText.setCharacterSize(35);
         player2.pointsText.setString(std::to_string(player2.points));
         player2.pointsText.setPosition(800, 170);
-
         currentPlayer = player1;
         gamePaused = false;
     }
@@ -313,10 +306,12 @@ public:
             currentPlayer = player2;
         }
     }
+
     Player getCurrentPlayer()
     {
         return currentPlayer;
     }
+
     void addPoints(Player player, int count)
     {
         if (player.number == 0)
@@ -336,6 +331,7 @@ public:
         player2.points = 0;
         currentPlayer = player1;
     }
+
     virtual void update(sf::RenderWindow* window, bool& isPaused, bool& isRestart, sf::Vector2f mouse, sf::Event event)
     {
         player1.numberText.setString("Player 1");
@@ -354,7 +350,6 @@ public:
             player2.numberText.setOutlineThickness(3.f);
             player2.numberText.setOutlineColor(sf::Color(0, 0, 0, 100));
         }
-        
     	menu.update(window, isPaused, isRestart, mouse, event);
 		
     }
@@ -365,14 +360,11 @@ public:
         {
             target.draw(menu);
         }
-
         target.draw(player1.numberText);
         target.draw(player1.pointsText);
         target.draw(player2.numberText);
         target.draw(player2.pointsText);
     }
-
-
 };
 
 
@@ -383,20 +375,20 @@ private:
     enum sfxType
     {
         CIRCLES,
-        CIRCLEBOARD,
         CIRCLEHOAL,
         COUNT
     };
     sf::SoundBuffer* buffer;
     std::array<sf::Sound, COUNT> sound;
-    std::vector<float> pos = std::vector<float>(2); // aaeoi? eii?aeiao oaio?a oa?eea
-    std::vector<float> V = std::vector<float>(2);   // aaeoi? nei?inoe oa?eea
-    std::vector<float> a = std::vector<float>(2);   // aaeoi? onei?aiey oa?eea
+
+    std::vector<float> pos = std::vector<float>(2); 
+    std::vector<float> V = std::vector<float>(2);   
+    std::vector<float> a = std::vector<float>(2);  
     float rad = rad_ball;
     sf::CircleShape shape;
     sf::Color color;
 
-    sf::RectangleShape field;  // iiea io eioi?iai ioneaeeaaao oa?ee
+    sf::RectangleShape field; 
     float field_x1;
     float field_x2;
     float field_y1;
@@ -412,10 +404,7 @@ public:
         buffer->loadFromFile("C:/Users/snigu/Downloads/game/game/sfx/Circles.wav");
         sound[CIRCLES].setBuffer(*buffer);
         buffer = new sf::SoundBuffer;
-        buffer->loadFromFile("C:/Users/snigu/Downloads/game/game/sfx/CircleBoard.wav");
-        sound[CIRCLEBOARD].setBuffer(*buffer);
-        buffer = new sf::SoundBuffer;
-        buffer->loadFromFile("C:/Users/snigu/Downloads/game/game/sfx/Cue.wav");
+        buffer->loadFromFile("C:/Users/snigu/Downloads/game/game/sfx/CircleHole.wav");
         sound[CIRCLEHOAL].setBuffer(*buffer);
     }
     void playSFX(const int sfxType, Ball* obj)
@@ -459,10 +448,8 @@ public:
 
     };
 
-    void move()//std::vector<Ball> balls)
+    void move()
     {
-
-
         a = float(-1) * V * betta_tormoz;
         interaction();
         shape.setPosition(pos[0] - rad, pos[1] - rad);
@@ -471,9 +458,8 @@ public:
             V[0] = 0;
             V[1] = 0;
         }
-
         pos = pos + V * dt;
-    };
+    }
 
     void interaction()
     {
@@ -491,30 +477,22 @@ public:
             {
                 pos = std::vector<float>{ field_x2 - rad, y };
                 V[0] *= -1;
-                playSFX(CIRCLEBOARD, this);
-                sf::sleep(sf::milliseconds(10));
             }
             if (x - rad < field_x1)
             {
                 pos = std::vector<float>{ field_x1 + rad, y };
                 V[0] *= -1;
-                playSFX(CIRCLEBOARD, this);
-                sf::sleep(sf::milliseconds(10));
             }
 
             if (y + rad > field_y2)
             {
                 pos = std::vector<float>{ x, field_y2 - rad };
                 V[1] *= -1;
-                playSFX(CIRCLEBOARD, this);
-                sf::sleep(sf::milliseconds(10));
             }
             if (y - rad < field_y1)
             {
                 pos = std::vector<float>{ x, field_y1 + rad };
                 V[1] *= -1;
-                playSFX(CIRCLEBOARD, this);
-                sf::sleep(sf::milliseconds(10));
             }
         }
     }
@@ -561,11 +539,14 @@ public:
 
     void del()
     {
+    	playSFX(CIRCLEHOAL, this);
+        sf::sleep(sf::milliseconds(10));
         not_del = false;
         std::vector<float> p23{ -rad,-rad };
         pos = p23;
         std::vector<float> V2{ 0, 0 };
         V = V2;
+       
     }
 
     bool is_clicked(std::vector <float> mouse_pos)
@@ -579,6 +560,8 @@ public:
     }
     void set_pos(std::vector<float> mouse_pos)
     {
+        playSFX(CIRCLEHOAL, this);
+        sf::sleep(sf::milliseconds(10));
         pos = mouse_pos;
     }
 
@@ -760,16 +743,6 @@ public:
                 holes.push_back(hole_right);
             }
         }
-
-        std::vector<float> pos4{ 333, 333 };
-
-        /*
-        for (Ball ball : balls)
-        {
-            ball.set_silka(balls);
-        }*/
-
-
         start_balls = balls;
         line = sf::VertexArray(sf::Lines, 2);
     };
@@ -819,8 +792,6 @@ public:
         {
             ball.draw();
         }
-
-
     }
 
     void restart_game()
@@ -876,7 +847,6 @@ public:
                             line[0].color = sf::Color::Blue;
                             line[1].position = sf::Vector2f((balls[selected_ball].ret_pos() + (2 + 7 * force_beat / max_force_of_beat) * rad_ball * vect)[0],
                                 (balls[selected_ball].ret_pos() + (2 + 7 * force_beat / max_force_of_beat) * rad_ball * vect)[1]);
-                            // ãðàäèåíò
                             line[1].color = sf::Color::Cyan;
                         }
                     }
@@ -897,7 +867,6 @@ public:
                         line[0].position = sf::Vector2f(1.0, 1.0);
                         line[0].color = sf::Color::Blue;
                         line[1].position = sf::Vector2f(1.1, 1.1);
-                        // ãðàäèåíò
                         line[1].color = sf::Color::Cyan;
 
                     }
@@ -938,7 +907,6 @@ public:
         }
     }
 };
-
 
 int main()
 {
