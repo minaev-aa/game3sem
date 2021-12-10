@@ -1,4 +1,4 @@
-#include <algorithm>
+ï»¿#include <algorithm>
 #include <array>
 #include <iostream>
 #include <math.h>
@@ -12,14 +12,13 @@
 //#include <SFML/Window.hpp>
 //#include "settings.cpp"
 
-
+bool gameover = false;
 float speed_player = 0.1f;
 int wind_x_size = 1000;
 int wind_y_size = 700;
 float rad_ball = 15; //20
 float rad_hole = 20;
-float start_dt = 0.02f;
-float dt = start_dt;
+float dt = 0.02f;
 float betta_tormoz = 0.3f; //0.1
 float tormoz_V = 0.8f;
 float time_of_full_beat = 0.7f;
@@ -30,7 +29,7 @@ sf::RenderWindow* window = new sf::RenderWindow(videoMode, "Billiarrd", sf::Styl
 
 float field_y_size = 100; // a i?ioaioao io wind_y_size
 float field_x_size = 0.4 * field_y_size;
-int number_balls_first_rad = 5;
+int number_balls_first_rad = 1;
 
 template <typename T>
 std::vector<T> operator+(std::vector<T> vec1, std::vector<T> vec2)
@@ -97,16 +96,16 @@ void print_vec(std::vector<T> vec)
     }
 }
 
-class Button: public sf::Drawable
+class Button : public sf::Drawable
 {
 public:
-	    bool pressed;
+    bool pressed;
     Button(std::string str, sf::Vector2f pos)
     {
         shape.setPosition(pos);
         shape.setSize(sf::Vector2f(200.f, 50.f));
         shape.setFillColor(sf::Color(0, 0, 0, 150));
-        font.loadFromFile("./PFAgoraSlabPro.ttf");
+        font.loadFromFile("C:/Users/snigu/Downloads/SFML_billiard-master/Abbieshire.ttf");
         text.setFont(font);
         text.setCharacterSize(30);
         text.setString(str);
@@ -115,7 +114,7 @@ public:
             shape.getPosition().y + (shape.getLocalBounds().height / 2.f - text.getLocalBounds().height)));
         pressed = false;
     }
-    ~Button(){}
+    ~Button() {}
 
     void setPosition(float x, float y)
     {
@@ -136,15 +135,15 @@ public:
         shape.setFillColor(sf::Color(0, 0, 0, 150));
         return false;
     }
-    
-    void updateEvent(sf::Vector2f mouse, sf::Event event)
+
+    void updateEvent(sf::Vector2f mouse, sf::Event event, bool& isPaused)
     {
         if (event.mouseButton.button == sf::Mouse::Left && mouseCheck(mouse))
         {
             if (event.type == sf::Event::MouseButtonPressed)
             {
-                shape.setOutlineThickness(-2);
-                pressed = true;
+            	shape.setOutlineThickness(-2);
+            	pressed = true;
             }
             if (event.type == sf::Event::MouseButtonReleased)
             {
@@ -153,10 +152,10 @@ public:
             }
         }
     }
-    void update(sf::Vector2f mouse, sf::Event event)
+    void update(sf::Vector2f mouse, sf::Event event, bool& isPaused)
     {
         mouseCheck(mouse);
-        updateEvent(mouse, event);
+    	updateEvent(mouse, event, isPaused);
     }
 
     enum btnType
@@ -177,7 +176,7 @@ private:
     }
 };
 
-class Menu: public sf::Drawable
+class Menu : public sf::Drawable
 {
 public:
     std::map <Button::btnType, Button*> buttons;
@@ -185,6 +184,14 @@ public:
         background.setSize(sf::Vector2f(400.f, 450.f));
         background.setPosition(300.f, 125.f);
         background.setFillColor(sf::Color(0, 100, 0, 100));
+
+        font.loadFromFile("C:/Users/snigu/Downloads/SFML_billiard-master/Abbieshire.ttf");
+        text.setFont(font);
+        text.setCharacterSize(30);
+        text.setString("Game over");
+        text.setPosition(sf::Vector2f(
+            background.getPosition().x + (background.getLocalBounds().width / 2.f - text.getLocalBounds().width / 2.f),
+            background.getPosition().y + (background.getLocalBounds().height / 2.f - text.getLocalBounds().height)));
 
         Button* btnContinue = new Button("Continue", sf::Vector2f(400.f, 150.f));
         Button* btnNewGame = new Button("New Game", sf::Vector2f(400.f, 250.f));
@@ -202,7 +209,6 @@ public:
     {
             for (auto btn : buttons)
             {
-            	btn.second->update(mouse, event);
                 if (btn.first == Button::EXIT && btn.second->pressed && isPaused)
                 {
                     window->close();
@@ -215,6 +221,7 @@ public:
                 {
                     isRestart = true;
                 }
+            	btn.second->update(mouse, event, isPaused);
                 
             }
         
@@ -222,73 +229,23 @@ public:
 
 private:
     sf::RectangleShape background;
-
-	void draw(sf::RenderTarget& target, sf::RenderStates states) const
-    {
-        target.draw(background);
-        for (auto btn : buttons)
-        {
-            target.draw(*btn.second);
-        }
-    }
-};
-
-class End_win : public sf::Drawable
-{
-public:
-    std::map <Button::btnType, Button*> buttons;
-    End_win() {
-
-        background.setSize(sf::Vector2f(400.f, 450.f));
-        background.setPosition(300.f, 125.f);
-        background.setFillColor(sf::Color(0, 100, 0, 100));
-        font.loadFromFile("./PFAgoraSlabPro.ttf");
-        text.setFont(font);
-        text.setCharacterSize(30);
-        text.setString("Game over");
-        text.setPosition(sf::Vector2f(
-            background.getPosition().x + (background.getLocalBounds().width / 2.f - text.getLocalBounds().width / 2.f),
-            background.getPosition().y + (background.getLocalBounds().height / 2.f - text.getLocalBounds().height)));
-
-        Button* btnNewGame = new Button("New Game", sf::Vector2f(400.f, 350.f));
-        Button* btnExit = new Button("Exit", sf::Vector2f(400.f, 550.f));
-        buttons.insert(std::pair<Button::btnType, Button*>(Button::NEW_GAME, btnNewGame));
-        buttons.insert(std::pair<Button::btnType, Button*>(Button::EXIT, btnExit));
-    }
-    ~End_win()
-    {
-        buttons.clear();
-    }
-
-    virtual void update(sf::RenderWindow* window, bool isWin, bool& isRestart, sf::Vector2f mouse, sf::Event event)
-    {
-        if (isWin) {
-            for (auto btn : buttons)
-            {
-                if (btn.first == Button::EXIT && btn.second->pressed)
-                {
-                    window->close();
-                }
-                if (btn.first == Button::NEW_GAME && btn.second->pressed)
-                {
-                    isRestart = true;
-                }
-                btn.second->update(mouse, event);
-            }
-        }
-    }
-
-private:
-    sf::RectangleShape background;
     sf::Text text;
     sf::Font font;
-
     void draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
         target.draw(background);
         for (auto btn : buttons)
         {
-            target.draw(*btn.second);
+            if(!gameover)
+				target.draw(*btn.second);
+            else {
+                if (btn.first != Button::CONTINUE)
+                    target.draw(*btn.second);
+            }
+        }
+        if(gameover)
+        {
+            target.draw(text);
         }
     }
 };
@@ -299,10 +256,9 @@ public:
     bool gamePaused;
     sf::Font font;
     Menu menu;
-    //End_win end_win;
 
     GUI() {
-        font.loadFromFile("./PFAgoraSlabPro.ttf");
+        font.loadFromFile("C:/Users/snigu/Downloads/SFML_billiard-master/Abbieshire.ttf");
 
         player1.points = 0;
         player1.number = 0;
@@ -380,7 +336,7 @@ public:
         player2.points = 0;
         currentPlayer = player1;
     }
-    virtual void update(sf::RenderWindow* window, bool& isPaused, bool& isRestart, sf::Vector2f mouse, sf::Event event, bool game_over)
+    virtual void update(sf::RenderWindow* window, bool& isPaused, bool& isRestart, sf::Vector2f mouse, sf::Event event)
     {
         player1.numberText.setString("Player 1");
         player1.pointsText.setString(std::to_string(player1.points));
@@ -398,9 +354,9 @@ public:
             player2.numberText.setOutlineThickness(3.f);
             player2.numberText.setOutlineColor(sf::Color(0, 0, 0, 100));
         }
-
-        menu.update(window, isPaused, isRestart, mouse, event);
-        //end_win.update(window, !game_over, isRestart, mouse, event);
+        
+    	menu.update(window, isPaused, isRestart, mouse, event);
+		
     }
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const
@@ -418,6 +374,7 @@ public:
 
 
 };
+
 
 
 class Ball
@@ -444,29 +401,30 @@ private:
     float field_x2;
     float field_y1;
     float field_y2;
-    std::vector<Ball> *silka;
-    bool not_del = true;
+    std::vector<Ball>* silka;
+    
 
 public:
+	bool not_del = true;
     void init_sound()
     {
         buffer = new sf::SoundBuffer;
-        buffer->loadFromFile("./sfx/Circles.wav");
+        buffer->loadFromFile("C:/Users/snigu/Downloads/game/game/sfx/Circles.wav");
         sound[CIRCLES].setBuffer(*buffer);
         buffer = new sf::SoundBuffer;
-        buffer->loadFromFile("./sfx/CircleBoard.wav");
+        buffer->loadFromFile("C:/Users/snigu/Downloads/game/game/sfx/CircleBoard.wav");
         sound[CIRCLEBOARD].setBuffer(*buffer);
         buffer = new sf::SoundBuffer;
-        buffer->loadFromFile("./sfx/Cue.wav");
+        buffer->loadFromFile("C:/Users/snigu/Downloads/game/game/sfx/Cue.wav");
         sound[CIRCLEHOAL].setBuffer(*buffer);
     }
-        void playSFX(const int sfxType, Ball* obj)
-            {
-                auto vol = obj->ret_speed();
-                float volume = sqrtf(vol[0] * vol[0] + vol[1] * vol[1]) / 5.f;
-                sound[sfxType].setVolume(std::min(volume, 100.f));
-                sound[sfxType].play();
-            }
+    void playSFX(const int sfxType, Ball* obj)
+    {
+        auto vol = obj->ret_speed();
+        float volume = sqrtf(vol[0] * vol[0] + vol[1] * vol[1]) / 5.f;
+        sound[sfxType].setVolume(std::min(volume, 100.f));
+        sound[sfxType].play();
+    }
     Ball(std::vector<float> pos, sf::RectangleShape field, std::vector<Ball>* silka) :
         pos(pos), shape(rad), color(sf::Color::Red), field(field), silka(silka)
     {
@@ -498,7 +456,7 @@ public:
     void draw()
     {
         window->draw(shape);
-        
+
     };
 
     void move()//std::vector<Ball> balls)
@@ -565,12 +523,12 @@ public:
     {
         for (Ball ball2 : *silka)
         {
-            
+
             if (ball2.pos != pos)
             {
                 std::vector<float> x1 = pos;
                 std::vector<float> x2 = ball2.ret_pos();
-                
+
                 if (x1[0] - x2[0] < 2 * rad)
                 {
                     if (x1[1] - x2[1] < 2 * rad)
@@ -580,7 +538,7 @@ public:
                             std::cout << "COLAPSE";
                             colapse_ball(ball2);
                         }
-                   }
+                    }
                 }
             }
         }
@@ -606,7 +564,7 @@ public:
         not_del = false;
         std::vector<float> p23{ -rad,-rad };
         pos = p23;
-        std::vector<float> V2{ 0, 0};
+        std::vector<float> V2{ 0, 0 };
         V = V2;
     }
 
@@ -618,6 +576,10 @@ public:
     void set_V(std::vector<float> new_V)
     {
         V = new_V;
+    }
+    void set_pos(std::vector<float> mouse_pos)
+    {
+        pos = mouse_pos;
     }
 
     void set_color(sf::Color col2)
@@ -640,7 +602,6 @@ private:
     sf::Color color;
     std::vector<float> pos = std::vector<float>(2); // Coords x, y
     std::vector<Ball>* silka;
-    bool is_black_ball_in;
 
 public:
     Hole(std::vector<float> pos, std::vector<Ball>* silka) :
@@ -648,7 +609,6 @@ public:
     {
         shape.setFillColor(color);
         shape.setPosition(pos[0] - rad, pos[1] - rad);
-        is_black_ball_in = false;
     };
 
 
@@ -675,21 +635,14 @@ public:
         {
             std::vector<float> x1 = pos;
             std::vector<float> x2 = (*ball2).ret_pos();
-            bool is_black_in_now = false;
-            bool is_black_here = false;
-            if ((*ball2).ret_color() == sf::Color::Black)
-            {
-                is_black_here = true;
-            }
 
             if (x1[0] - x2[0] < rad_hole)
             {
                 if (x1[1] - x2[1] < rad_hole)
                 {
-                    if (norm(x1 - x2) < rad_hole)
+                    if (norm(x1 - x2) < rad_hole/2)
                     {
-                        //std::cout << "str" << is_black_ball_in << is_black_here << is_black_in_now  << std::endl;
-                        if (!(is_black_here))
+                        if ((*ball2).ret_color() != sf::Color::Black)
                         {
                             std::cout << "COUTch";
                             //(silka).erase(ball2);
@@ -698,36 +651,39 @@ public:
                         }
                         else
                         {
-                            is_black_in_now = true;
-                            
-                            if(!(is_black_ball_in)) 
-                            {
-                                std::cout << "BLACK!!!";
-                                //New_Score--;
+                            std::cout << "BLACK!!!";
+                            //(*ball2).del();
+                            sf::Event e;
+                            window->pollEvent(e);
+                            float   x;
+                            float y;
+                            while (e.type != sf::Event::MouseButtonPressed){
+                                while (window->pollEvent(e))
+                                {
+                                    switch (e.type) {
+                                    case sf::Event::Closed: window->close(); break;
+                                    case sf::Event::MouseMoved:
+                                        x = e.mouseMove.x;
+                                        y = e.mouseMove.y;
+                                    case sf::Event::MouseButtonPressed:
+                                        std::vector<float> array1 = { x , y };
+                                        std::vector<float> array = { 0, 0 };
+                                        (*ball2).set_pos(array1);
+                                        (*ball2).set_V(array);
+                                        break;
+                                        
+
+                                    }
+                                }
                             }
+                        	New_Score--;
+                        
                         }
-                        //std::cout << "nety" << is_black_ball_in << is_black_here << is_black_in_now << std::endl;
                     }
                 }
             }
-            if (is_black_here)
-            {
-                if (is_black_in_now)
-                {
-                    //std::cout << 222222888888 << is_black_in_now << std::endl;
-                    is_black_ball_in = true;
-                    //std::cout << "endy" << is_black_ball_in << is_black_here << is_black_in_now << std::endl;
-                }
-                else
-                {
-                    //is_black_ball_in = false;
-                    
-                }
-            }
-            
-
         }
-        return New_Score;
+    	return New_Score;
     }
 };
 
@@ -738,7 +694,7 @@ private:
     sf::RectangleShape field;
     bool restartGame = false;
     std::vector <float> mouse_pos;
-    int selected_ball = -1; 
+    int selected_ball = -1;
     float force_of_beat = 0;
     std::vector<Ball> balls;
     bool udar = false;
@@ -749,9 +705,7 @@ private:
     std::vector<Hole> holes;
     float force_beat;
     int New_Score = 0;
-    int count_of_coutced_balls = 0;
-    bool game_over = false;
-    
+
 public:
 
     Game()
@@ -760,39 +714,35 @@ public:
         field.setPosition(wind_x_size / 2 - field_x_size / 100 * wind_x_size / 2, 0);
 
         mouse_pos = std::vector <float>{ -10, -10 };
-        //restartGame = false;
-
         gui = new GUI();
-
         std::vector<float> pos1{ float(wind_x_size) / 2, float(wind_y_size) / 2 };
         Ball ball1(pos1, field, &balls);
         ball1.set_color(sf::Color::Black);
-        //std::vector<float> V{0, 300};
-        //ball1.set_V(V);
+
         balls.push_back(ball1);
-        
+
         for (int i = 0; i < number_balls_first_rad; i++)
         {
-            float y = float(wind_y_size) / 2 -  rad_ball* pow(3.0,0.5) * i - i - 100;
+            float y = float(wind_y_size) / 2 - rad_ball * pow(3.0, 0.5) * i - i - 100;
             for (int j = 0; j <= i; j++)
             {
                 if (i % 2 == 1)
                 {
-                    float x = float(wind_x_size) / 2 - (i+1) / 2 * rad_ball*2 + rad_ball + j * 2 * rad_ball;
+                    float x = float(wind_x_size) / 2 - (i + 1) / 2 * rad_ball * 2 + rad_ball + j * 2 * rad_ball;
                     std::vector<float> pos{ x,y };
                     Ball ball(pos, field, &balls);
                     balls.push_back(ball);
-                    
+
                 }
                 else
                 {
-                    float x = float(wind_x_size) / 2 - (i) / 2 * rad_ball*2 + j * 2 * rad_ball;
+                    float x = float(wind_x_size) / 2 - (i) / 2 * rad_ball * 2 + j * 2 * rad_ball;
                     std::vector<float> pos{ x,y };
                     Ball ball(pos, field, &balls);
                     balls.push_back(ball);
-                    
+
                 }
-                
+
             }
         }
 
@@ -812,7 +762,7 @@ public:
         }
 
         std::vector<float> pos4{ 333, 333 };
-       
+
         /*
         for (Ball ball : balls)
         {
@@ -826,24 +776,24 @@ public:
 
     void render()
     {
-        if (!gui->gamePaused || !game_over) {
+        if (true) {
             std::vector<Ball> new_balls;
             for (Ball main_ball : balls)
             {
                 main_ball.move();
                 new_balls.push_back(main_ball);
-                if (New_Score != 0)  
+                if (New_Score != 0)
                 {
                     gui->addPoints(gui->getCurrentPlayer(), New_Score);
                     New_Score = 0;
                 }
                 for (Ball main_ball1 : balls) {
-                    if (udar && main_ball1.ret_speed() == std::vector<float>(2))
+                    if (udar && main_ball1.ret_speed() == std::vector<float>(2) && main_ball1.ret_color() == sf::Color::Black)
                     {
                         gui->setCurrentPlayer(1 - gui->getCurrentPlayer().number);
                         udar = false;
                     }
-                    if (main_ball1.ret_speed() != std::vector<float>(2))
+                    if (main_ball1.ret_speed() != std::vector<float>(2) && main_ball1.ret_color() == sf::Color::Black)
                     {
                         gui->setCurrentPlayer(1 - gui->getCurrentPlayer().number);
                         udar = true;
@@ -855,43 +805,34 @@ public:
             for (Hole main_hole : holes)
             {
                 New_Score = main_hole.collabse_balls(New_Score);
-                
-            }
-            if (New_Score != 0) {
-                count_of_coutced_balls++;
-            }
-            if (count_of_coutced_balls == 15)
-            {
-                game_over = true;
-            }
-            window->clear(sf::Color(75, 0, 163));}
-            window->draw(field);
-            window->draw(line);
-            for (Hole ball : holes)
-            {
-                ball.draw();
-            }
 
-            for (Ball ball : balls)
-            {
-                ball.draw();
             }
-        
+            window->clear(sf::Color(75, 0, 163));
+        }
+        window->draw(field);
+        window->draw(line);
+        for (Hole ball : holes)
+        {
+            ball.draw();
+        }
+        for (Ball ball : balls)
+        {
+            ball.draw();
+        }
+
+
     }
 
     void restart_game()
     {
-        gui->restart();
         restartGame = false;
+        gameover = false;
         balls = start_balls;
-        dt = start_dt;
-        count_of_coutced_balls = 0;
-        bool game_over = false;
+    	gui->restart();
     }
 
     void event_update()
     {
-        bool mouse_isnot_pressed = true;
         while (window->pollEvent(sfmlEvent))
         {
             switch (sfmlEvent.type)
@@ -910,7 +851,7 @@ public:
                 m_mouse.y = sfmlEvent.mouseMove.y;
 
             case sf::Event::MouseButtonPressed:
-                if (!gui->gamePaused) {
+                if (!gui->gamePaused  && !gameover) {
 
                     mouse_pos[0] = m_mouse.x;
                     mouse_pos[1] = m_mouse.y;
@@ -920,7 +861,11 @@ public:
 
                         for (int i = 0; i < balls.size(); i++)
                         {
-                            if (balls[i].is_clicked(mouse_pos)) { selected_ball = i; }
+                            if (balls[i].is_clicked(mouse_pos))
+                            {
+                                if (balls[i].ret_color() == sf::Color::Black)
+	                            selected_ball = i;
+                            }
                         }
 
                         if (selected_ball != -1) {
@@ -931,7 +876,7 @@ public:
                             line[0].color = sf::Color::Blue;
                             line[1].position = sf::Vector2f((balls[selected_ball].ret_pos() + (2 + 7 * force_beat / max_force_of_beat) * rad_ball * vect)[0],
                                 (balls[selected_ball].ret_pos() + (2 + 7 * force_beat / max_force_of_beat) * rad_ball * vect)[1]);
-                            // ãðàäèåíò
+                            // Ã£Ã°Ã Ã¤Ã¨Ã¥Ã­Ã²
                             line[1].color = sf::Color::Cyan;
                         }
                     }
@@ -952,7 +897,7 @@ public:
                         line[0].position = sf::Vector2f(1.0, 1.0);
                         line[0].color = sf::Color::Blue;
                         line[1].position = sf::Vector2f(1.1, 1.1);
-                        // ãðàäèåíò
+                        // Ã£Ã°Ã Ã¤Ã¨Ã¥Ã­Ã²
                         line[1].color = sf::Color::Cyan;
 
                     }
@@ -965,20 +910,31 @@ public:
     {
         while (window->isOpen())
         {
-            render();
+            int i = 0;
+            for (auto ball : balls)
+            {
+                if (!ball.not_del)
+                    i++;
+            }
+            if (i == number_balls_first_rad * (number_balls_first_rad + 1) / 2)
+            {
+                gameover = true;
+                gui->gamePaused = true;
+            }
+
+        	render();
+        	event_update();
+        	
+        	gui->update(window, gui->gamePaused, restartGame, m_mouse, sfmlEvent);
+        	window->draw(*gui);
+        	window->display();
             
-            if (restartGame)
+			if (restartGame)
             {
                 restart_game();
+				gui->setCurrentPlayer(gui->player2);
             }
-            
-            event_update();
-
-            gui->update(window, gui->gamePaused, restartGame, m_mouse, sfmlEvent, game_over);
-            window->draw(*gui);
-            
-            window->display();
-            
+        	
         }
     }
 };
