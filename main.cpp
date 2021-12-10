@@ -104,7 +104,7 @@ public:
         shape.setPosition(pos);
         shape.setSize(sf::Vector2f(200.f, 50.f));
         shape.setFillColor(sf::Color(0, 0, 0, 150));
-        font.loadFromFile("./Abbieshire.ttf");
+        font.loadFromFile("./PFAgoraSlabPro.ttf");
         text.setFont(font);
         text.setCharacterSize(30);
         text.setString(str);
@@ -238,7 +238,7 @@ public:
     Menu menu;
 
     GUI() {
-        font.loadFromFile("./Abbieshire.ttf");
+        font.loadFromFile("./PFAgoraSlabPro.ttf");
 
         player1.points = 0;
         player1.number = 0;
@@ -566,6 +566,7 @@ private:
     GUI* gui;
     std::vector<Ball> start_balls;
     sf::Event   sfmlEvent;
+    sf::VertexArray line;
     
 public:
 
@@ -619,6 +620,7 @@ public:
 
 
         start_balls = balls;
+        line = sf::VertexArray(sf::Lines, 2);
     };
 
     void render()
@@ -643,6 +645,7 @@ public:
             balls = new_balls;
             window->clear(sf::Color(75, 0, 163));}
             window->draw(field);
+            window->draw(line);
             for (Ball ball : balls)
             {
                 ball.draw();
@@ -678,17 +681,28 @@ public:
 
             case sf::Event::MouseButtonPressed:
                 if (!gui->gamePaused) {
+                    float force_beat;
+                    mouse_pos[0] = m_mouse.x;
+                    mouse_pos[1] = m_mouse.y;
+
                     if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
                     {
-                        if (force_of_beat < time_of_full_beat) {
-                            force_of_beat += dt;
-                        }
 
                         for (int i = 0; i < balls.size(); i++)
                         {
-                            mouse_pos[0] = m_mouse.x;
-                            mouse_pos[1] = m_mouse.y;
                             if (balls[i].is_clicked(mouse_pos)) { selected_ball = i; }
+                        }
+
+                        if (selected_ball != -1) {
+                            force_beat = std::min(norm((balls[selected_ball].ret_pos() - mouse_pos)) / 200, 1.0f) * max_force_of_beat;
+                            std::vector <float> vect = (balls[selected_ball].ret_pos() - mouse_pos) * (1 / norm(balls[selected_ball].ret_pos() - mouse_pos));
+                            line[0].position = sf::Vector2f((balls[selected_ball].ret_pos() + 2 * rad_ball * vect)[0],
+                                (balls[selected_ball].ret_pos() + 2 * rad_ball * vect)[1]);
+                            line[0].color = sf::Color::Blue;
+                            line[1].position = sf::Vector2f((balls[selected_ball].ret_pos() + (2 + 7 * force_beat / max_force_of_beat) * rad_ball * vect)[0],
+                                (balls[selected_ball].ret_pos() + (2 + 7 * force_beat / max_force_of_beat) * rad_ball * vect)[1]);
+                            // градиент
+                            line[1].color = sf::Color::Cyan;
                         }
                     }
                     else
@@ -697,13 +711,19 @@ public:
                         {
                             std::cout << "Beat!";
                             std::vector <float> beat{ 0,0 };
-                            beat = ((balls[selected_ball].ret_pos() - mouse_pos) * (1 / norm(balls[selected_ball].ret_pos() - mouse_pos))) * force_of_beat * max_force_of_beat;
+                            force_beat = std::min(norm((balls[selected_ball].ret_pos() - mouse_pos)) / 200, 1.0f) * max_force_of_beat;
+                            beat = ((balls[selected_ball].ret_pos() - mouse_pos)) * (1 / norm(balls[selected_ball].ret_pos() - mouse_pos)) * force_beat;
                             balls[selected_ball].set_V(balls[selected_ball].ret_speed() + beat);
                             //beat
                         }
 
                         selected_ball = -1;
-                        force_of_beat = 0;
+                        line[0].position = sf::Vector2f(1.0, 1.0);
+                        line[0].color = sf::Color::Blue;
+                        line[1].position = sf::Vector2f(1.1, 1.1);
+                        // градиент
+                        line[1].color = sf::Color::Cyan;
+
                     }
                 }
             }
