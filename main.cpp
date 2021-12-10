@@ -17,6 +17,7 @@ float speed_player = 0.1f;
 int wind_x_size = 1000;
 int wind_y_size = 700;
 float rad_ball = 15; //20
+float rad_hole = 20;
 float dt = 0.02f;
 float betta_tormoz = 0.3f; //0.1
 float tormoz_V = 0.8f;
@@ -354,6 +355,8 @@ public:
 
 };
 
+
+
 class Ball
 {
 private:
@@ -380,6 +383,7 @@ private:
     float field_y1;
     float field_y2;
     std::vector<Ball> *silka;
+    bool not_del = true;
 
 public:
     void init_sound()
@@ -459,34 +463,37 @@ public:
     {
         float x = pos[0];
         float y = pos[1];
-        if (x + rad > field_x2)
+        if (not_del)
         {
-            pos = std::vector<float>{ field_x2 - rad, y };
-            V[0] *= -1;
-            playSFX(CIRCLEBOARD, this);
-            sf::sleep(sf::milliseconds(10));
-        }
-        if (x - rad < field_x1)
-        {
-            pos = std::vector<float>{ field_x1 + rad, y };
-            V[0] *= -1;
-            playSFX(CIRCLEBOARD, this);
-            sf::sleep(sf::milliseconds(10));
-        }
+            if (x + rad > field_x2)
+            {
+                pos = std::vector<float>{ field_x2 - rad, y };
+                V[0] *= -1;
+                playSFX(CIRCLEBOARD, this);
+                sf::sleep(sf::milliseconds(10));
+            }
+            if (x - rad < field_x1)
+            {
+                pos = std::vector<float>{ field_x1 + rad, y };
+                V[0] *= -1;
+                playSFX(CIRCLEBOARD, this);
+                sf::sleep(sf::milliseconds(10));
+            }
 
-        if (y + rad > field_y2)
-        {
-            pos = std::vector<float>{ x, field_y2 - rad };
-            V[1] *= -1;
-            playSFX(CIRCLEBOARD, this);
-            sf::sleep(sf::milliseconds(10));
-        }
-        if (y - rad < field_y1)
-        {
-            pos = std::vector<float>{ x, field_y1 + rad };
-            V[1] *= -1;
-            playSFX(CIRCLEBOARD, this);
-            sf::sleep(sf::milliseconds(10));
+            if (y + rad > field_y2)
+            {
+                pos = std::vector<float>{ x, field_y2 - rad };
+                V[1] *= -1;
+                playSFX(CIRCLEBOARD, this);
+                sf::sleep(sf::milliseconds(10));
+            }
+            if (y - rad < field_y1)
+            {
+                pos = std::vector<float>{ x, field_y1 + rad };
+                V[1] *= -1;
+                playSFX(CIRCLEBOARD, this);
+                sf::sleep(sf::milliseconds(10));
+            }
         }
     }
 
@@ -530,6 +537,15 @@ public:
         sf::sleep(sf::milliseconds(10));
     }
 
+    void del()
+    {
+        not_del = false;
+        std::vector<float> p23{ -rad,-rad };
+        pos = p23;
+        std::vector<float> V2{ 0, 0};
+        V = V2;
+    }
+
     bool is_clicked(std::vector <float> mouse_pos)
     {
         return norm(pos - mouse_pos) < rad_ball;
@@ -552,6 +568,65 @@ public:
     }
 };
 
+class Hole
+{
+private:
+    float rad = rad_hole;
+    sf::CircleShape shape;
+    sf::Color color;
+    std::vector<float> pos = std::vector<float>(2); // Coords x, y
+    std::vector<Ball>* silka;
+
+public:
+    Hole(std::vector<float> pos, std::vector<Ball>* silka) :
+        pos(pos), shape(rad), color(sf::Color::Red), silka(silka)
+    {
+        shape.setFillColor(color);
+        shape.setPosition(pos[0] - rad, pos[1] - rad);
+    };
+
+
+    std::vector<float> ret_pos()
+    {
+        return pos;
+    }
+
+    void draw()
+    {
+        window->draw(shape);
+
+    };
+
+    void set_color(sf::Color col2)
+    {
+        color = col2;
+        shape.setFillColor(color);
+    }
+
+    void collabse_balls()
+    {
+        for (auto ball2 = (*silka).begin(); ball2 != (*silka).end(); ball2++)
+        {
+            std::vector<float> x1 = pos;
+            std::vector<float> x2 = (*ball2).ret_pos();
+
+            if (x1[0] - x2[0] < rad_hole)
+            {
+                if (x1[1] - x2[1] < rad_hole)
+                {
+                    if (norm(x1 - x2) < rad_hole)
+                    {
+                        std::cout << "COUTch";
+                        //(silka).erase(ball2);
+                        (*ball2).del();
+                    }
+                }
+            }
+
+        }
+    }
+};
+
 class Game
 {
 private:
@@ -567,6 +642,7 @@ private:
     std::vector<Ball> start_balls;
     sf::Event   sfmlEvent;
     sf::VertexArray line;
+    std::vector<Hole> holes;
     
 public:
 
@@ -612,6 +688,10 @@ public:
             }
         }
 
+        std::vector<float> pos4{ 333, 333 };
+        Hole hole1(pos4, &balls);
+        hole1.set_color(sf::Color::Yellow);
+        holes.push_back(hole1);
         /*
         for (Ball ball : balls)
         {
@@ -643,13 +723,22 @@ public:
                 }
             }
             balls = new_balls;
+            for (Hole main_hole : holes)
+            {
+                main_hole.collabse_balls();
+            }
             window->clear(sf::Color(75, 0, 163));}
             window->draw(field);
             window->draw(line);
+            for (Hole ball : holes)
+            {
+                ball.draw();
+            }
             for (Ball ball : balls)
             {
                 ball.draw();
             }
+            
         
     }
 
