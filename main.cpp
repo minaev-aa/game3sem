@@ -231,6 +231,7 @@ private:
         }
     }
 };
+
 class GUI : public sf::Drawable
 {
 public:
@@ -298,15 +299,15 @@ public:
     {
         return currentPlayer;
     }
-    void addPoints(Player player)
+    void addPoints(Player player, int count)
     {
         if (player.number == 0)
         {
-            player1.points++;
+            player1.points += count;
         }
         if (player.number == 1)
         {
-            player2.points++;
+            player2.points += count;
         }
     }
 
@@ -425,6 +426,11 @@ public:
     std::vector<float> ret_speed()
     {
         return V;
+    }
+
+    sf::Color ret_color()
+    {
+        return color;
     }
 
     void draw()
@@ -599,7 +605,7 @@ public:
         shape.setFillColor(color);
     }
 
-    void collabse_balls()
+    int collabse_balls(int New_Score)
     {
         for (auto ball2 = (*silka).begin(); ball2 != (*silka).end(); ball2++)
         {
@@ -612,14 +618,24 @@ public:
                 {
                     if (norm(x1 - x2) < rad_hole)
                     {
-                        std::cout << "COUTch";
-                        //(silka).erase(ball2);
-                        (*ball2).del();
+                        if ((*ball2).ret_color() != sf::Color::Black)
+                        {
+                            std::cout << "COUTch";
+                            //(silka).erase(ball2);
+                            (*ball2).del();
+                            New_Score++;
+                        }
+                        else
+                        {
+                            std::cout << "BLACK!!!";
+                            //New_Score--;
+                        }
                     }
                 }
             }
 
         }
+        return New_Score;
     }
 };
 
@@ -639,6 +655,8 @@ private:
     sf::Event   sfmlEvent;
     sf::VertexArray line;
     std::vector<Hole> holes;
+    float force_beat;
+    int New_Score = 0;
     
 public:
 
@@ -684,10 +702,23 @@ public:
             }
         }
 
+        for (int i = -1; i < 2; i++)
+        {
+            for (int j = -1; j < 2; j += 2)
+            {
+                std::cout << field_x_size;
+                std::vector<float> pos_right{ float((wind_x_size + j * field_x_size * 10) / 2 - j * rad_hole), float(wind_y_size / 2 + i * (wind_y_size / 2 - rad_hole)) };
+                Hole hole_right(pos_right, &balls);
+                hole_right.set_color(sf::Color::Yellow);
+                holes.push_back(hole_right);
+                Hole hole1(pos_right, &balls);
+                hole_right.set_color(sf::Color::Yellow);
+                holes.push_back(hole_right);
+            }
+        }
+
         std::vector<float> pos4{ 333, 333 };
-        Hole hole1(pos4, &balls);
-        hole1.set_color(sf::Color::Yellow);
-        holes.push_back(hole1);
+       
         /*
         for (Ball ball : balls)
         {
@@ -707,11 +738,11 @@ public:
             {
                 main_ball.move();
                 new_balls.push_back(main_ball);
-                /*if (x)  
+                if (New_Score != 0)  
                 {
-                    gui->addPoints(gui->getCurrentPlayer());
-                    x = false;
-                }*/
+                    gui->addPoints(gui->getCurrentPlayer(), New_Score);
+                    New_Score = 0;
+                }
                 for (Ball main_ball1 : balls) {
                     if (udar && main_ball1.ret_speed() == std::vector<float>(2))
                     {
@@ -729,7 +760,8 @@ public:
             balls = new_balls;
             for (Hole main_hole : holes)
             {
-                main_hole.collabse_balls();
+                New_Score = main_hole.collabse_balls(New_Score);
+
             }
             window->clear(sf::Color(75, 0, 163));}
             window->draw(field);
@@ -755,6 +787,7 @@ public:
 
     void event_update()
     {
+        bool mouse_isnot_pressed = true;
         while (window->pollEvent(sfmlEvent))
         {
             switch (sfmlEvent.type)
@@ -774,7 +807,7 @@ public:
 
             case sf::Event::MouseButtonPressed:
                 if (!gui->gamePaused) {
-                    float force_beat;
+
                     mouse_pos[0] = m_mouse.x;
                     mouse_pos[1] = m_mouse.y;
 
