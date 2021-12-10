@@ -364,7 +364,6 @@ private:
     {
         CIRCLES,
         CIRCLEBOARD,
-        CUE,
         CIRCLEHOAL,
         COUNT
     };
@@ -396,9 +395,6 @@ public:
         sound[CIRCLEBOARD].setBuffer(*buffer);
         buffer = new sf::SoundBuffer;
         buffer->loadFromFile("./sfx/Cue.wav");
-        sound[CUE].setBuffer(*buffer);
-        buffer = new sf::SoundBuffer;
-        buffer->loadFromFile("./sfx/CircleHole.wav");
         sound[CIRCLEHOAL].setBuffer(*buffer);
     }
         void playSFX(const int sfxType, Ball* obj)
@@ -637,7 +633,7 @@ private:
     int selected_ball = -1; 
     float force_of_beat = 0;
     std::vector<Ball> balls;
-    //bool restartGame; //= false;
+    bool udar = false;
     GUI* gui;
     std::vector<Ball> start_balls;
     sf::Event   sfmlEvent;
@@ -716,10 +712,18 @@ public:
                     gui->addPoints(gui->getCurrentPlayer());
                     x = false;
                 }*/
-                
-                if (main_ball.ret_speed() == std::vector<float>(2))
-                {
-                    gui->setCurrentPlayer(1 - gui->getCurrentPlayer().number);
+                for (Ball main_ball1 : balls) {
+                    if (udar && main_ball1.ret_speed() == std::vector<float>(2))
+                    {
+                        gui->setCurrentPlayer(1 - gui->getCurrentPlayer().number);
+                        udar = false;
+                    }
+                    if (main_ball1.ret_speed() != std::vector<float>(2))
+                    {
+                        gui->setCurrentPlayer(1 - gui->getCurrentPlayer().number);
+                        udar = true;
+                        break;
+                    }
                 }
             }
             balls = new_balls;
@@ -803,6 +807,7 @@ public:
                             force_beat = std::min(norm((balls[selected_ball].ret_pos() - mouse_pos)) / 200, 1.0f) * max_force_of_beat;
                             beat = ((balls[selected_ball].ret_pos() - mouse_pos)) * (1 / norm(balls[selected_ball].ret_pos() - mouse_pos)) * force_beat;
                             balls[selected_ball].set_V(balls[selected_ball].ret_speed() + beat);
+                            udar = true;
                             //beat
                         }
 
