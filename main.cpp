@@ -18,7 +18,8 @@ int wind_x_size = 1000;
 int wind_y_size = 700;
 float rad_ball = 15; //20
 float rad_hole = 20;
-float dt = 0.02f;
+float start_dt = 0.02f;
+float dt = start_dt;
 float betta_tormoz = 0.3f; //0.1
 float tormoz_V = 0.8f;
 float time_of_full_beat = 0.7f;
@@ -232,12 +233,73 @@ private:
     }
 };
 
+class End_win : public sf::Drawable
+{
+public:
+    std::map <Button::btnType, Button*> buttons;
+    End_win() {
+
+        background.setSize(sf::Vector2f(400.f, 450.f));
+        background.setPosition(300.f, 125.f);
+        background.setFillColor(sf::Color(0, 100, 0, 100));
+        font.loadFromFile("./PFAgoraSlabPro.ttf");
+        text.setFont(font);
+        text.setCharacterSize(30);
+        text.setString("Game over");
+        text.setPosition(sf::Vector2f(
+            background.getPosition().x + (background.getLocalBounds().width / 2.f - text.getLocalBounds().width / 2.f),
+            background.getPosition().y + (background.getLocalBounds().height / 2.f - text.getLocalBounds().height)));
+
+        Button* btnNewGame = new Button("New Game", sf::Vector2f(400.f, 350.f));
+        Button* btnExit = new Button("Exit", sf::Vector2f(400.f, 550.f));
+        buttons.insert(std::pair<Button::btnType, Button*>(Button::NEW_GAME, btnNewGame));
+        buttons.insert(std::pair<Button::btnType, Button*>(Button::EXIT, btnExit));
+    }
+    ~End_win()
+    {
+        buttons.clear();
+    }
+
+    virtual void update(sf::RenderWindow* window, bool isWin, bool& isRestart, sf::Vector2f mouse, sf::Event event)
+    {
+        if (isWin) {
+            for (auto btn : buttons)
+            {
+                if (btn.first == Button::EXIT && btn.second->pressed)
+                {
+                    window->close();
+                }
+                if (btn.first == Button::NEW_GAME && btn.second->pressed)
+                {
+                    isRestart = true;
+                }
+                btn.second->update(mouse, event);
+            }
+        }
+    }
+
+private:
+    sf::RectangleShape background;
+    sf::Text text;
+    sf::Font font;
+
+    void draw(sf::RenderTarget& target, sf::RenderStates states) const
+    {
+        target.draw(background);
+        for (auto btn : buttons)
+        {
+            target.draw(*btn.second);
+        }
+    }
+};
+
 class GUI : public sf::Drawable
 {
 public:
     bool gamePaused;
     sf::Font font;
     Menu menu;
+    //End_win end_win;
 
     GUI() {
         font.loadFromFile("./PFAgoraSlabPro.ttf");
@@ -318,7 +380,7 @@ public:
         player2.points = 0;
         currentPlayer = player1;
     }
-    virtual void update(sf::RenderWindow* window, bool& isPaused, bool& isRestart, sf::Vector2f mouse, sf::Event event)
+    virtual void update(sf::RenderWindow* window, bool& isPaused, bool& isRestart, sf::Vector2f mouse, sf::Event event, bool game_over)
     {
         player1.numberText.setString("Player 1");
         player1.pointsText.setString(std::to_string(player1.points));
@@ -338,6 +400,7 @@ public:
         }
 
         menu.update(window, isPaused, isRestart, mouse, event);
+        //end_win.update(window, !game_over, isRestart, mouse, event);
     }
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const
@@ -355,7 +418,6 @@ public:
 
 
 };
-
 
 
 class Ball
@@ -578,6 +640,7 @@ private:
     sf::Color color;
     std::vector<float> pos = std::vector<float>(2); // Coords x, y
     std::vector<Ball>* silka;
+    bool is_black_ball_in;
 
 public:
     Hole(std::vector<float> pos, std::vector<Ball>* silka) :
@@ -585,6 +648,7 @@ public:
     {
         shape.setFillColor(color);
         shape.setPosition(pos[0] - rad, pos[1] - rad);
+        is_black_ball_in = false;
     };
 
 
@@ -611,6 +675,12 @@ public:
         {
             std::vector<float> x1 = pos;
             std::vector<float> x2 = (*ball2).ret_pos();
+            bool is_black_in_now = false;
+            bool is_black_here = false;
+            if ((*ball2).ret_color() == sf::Color::Black)
+            {
+                is_black_here = true;
+            }
 
             if (x1[0] - x2[0] < rad_hole)
             {
@@ -618,7 +688,8 @@ public:
                 {
                     if (norm(x1 - x2) < rad_hole)
                     {
-                        if ((*ball2).ret_color() != sf::Color::Black)
+                        //std::cout << "str" << is_black_ball_in << is_black_here << is_black_in_now  << std::endl;
+                        if (!(is_black_here))
                         {
                             std::cout << "COUTch";
                             //(silka).erase(ball2);
@@ -627,12 +698,33 @@ public:
                         }
                         else
                         {
-                            std::cout << "BLACK!!!";
-                            //New_Score--;
+                            is_black_in_now = true;
+                            
+                            if(!(is_black_ball_in)) 
+                            {
+                                std::cout << "BLACK!!!";
+                                //New_Score--;
+                            }
                         }
+                        //std::cout << "nety" << is_black_ball_in << is_black_here << is_black_in_now << std::endl;
                     }
                 }
             }
+            if (is_black_here)
+            {
+                if (is_black_in_now)
+                {
+                    //std::cout << 222222888888 << is_black_in_now << std::endl;
+                    is_black_ball_in = true;
+                    //std::cout << "endy" << is_black_ball_in << is_black_here << is_black_in_now << std::endl;
+                }
+                else
+                {
+                    //is_black_ball_in = false;
+                    
+                }
+            }
+            
 
         }
         return New_Score;
@@ -657,6 +749,8 @@ private:
     std::vector<Hole> holes;
     float force_beat;
     int New_Score = 0;
+    int count_of_coutced_balls = 0;
+    bool game_over = false;
     
 public:
 
@@ -732,7 +826,7 @@ public:
 
     void render()
     {
-        if (!gui->gamePaused) {
+        if (!gui->gamePaused || !game_over) {
             std::vector<Ball> new_balls;
             for (Ball main_ball : balls)
             {
@@ -761,7 +855,14 @@ public:
             for (Hole main_hole : holes)
             {
                 New_Score = main_hole.collabse_balls(New_Score);
-
+                
+            }
+            if (New_Score != 0) {
+                count_of_coutced_balls++;
+            }
+            if (count_of_coutced_balls == 15)
+            {
+                game_over = true;
             }
             window->clear(sf::Color(75, 0, 163));}
             window->draw(field);
@@ -770,11 +871,11 @@ public:
             {
                 ball.draw();
             }
+
             for (Ball ball : balls)
             {
                 ball.draw();
             }
-            
         
     }
 
@@ -783,6 +884,9 @@ public:
         gui->restart();
         restartGame = false;
         balls = start_balls;
+        dt = start_dt;
+        count_of_coutced_balls = 0;
+        bool game_over = false;
     }
 
     void event_update()
@@ -870,7 +974,7 @@ public:
             
             event_update();
 
-            gui->update(window, gui->gamePaused, restartGame, m_mouse, sfmlEvent);
+            gui->update(window, gui->gamePaused, restartGame, m_mouse, sfmlEvent, game_over);
             window->draw(*gui);
             
             window->display();
