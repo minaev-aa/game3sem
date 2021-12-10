@@ -199,24 +199,24 @@ public:
 
     virtual void update(sf::RenderWindow* window, bool& isPaused, bool& isRestart, sf::Vector2f mouse, sf::Event event)
     {
-        if (isPaused) {
             for (auto btn : buttons)
             {
-                if (btn.first == Button::EXIT && btn.second->pressed)
+            	btn.second->update(mouse, event);
+                if (btn.first == Button::EXIT && btn.second->pressed && isPaused)
                 {
                     window->close();
                 }
-                if (btn.first == Button::CONTINUE && btn.second->pressed)
+                if (btn.first == Button::CONTINUE && btn.second->pressed && isPaused)
                 {
                     isPaused = false;
                 }
-                if (btn.first == Button::NEW_GAME && btn.second->pressed)
+                if (btn.first == Button::NEW_GAME && btn.second->pressed && isPaused)
                 {
                     isRestart = true;
                 }
-                btn.second->update(mouse, event);
+                
             }
-        }
+        
     }
 
 private:
