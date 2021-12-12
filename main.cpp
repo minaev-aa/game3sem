@@ -7,13 +7,13 @@
 #include <SFML/Audio/Sound.hpp>
 #include <SFML/Audio/SoundBuffer.hpp>
 #include "Settings.h"
-#include "Operator.h"
-#include "Ball.h"
-#include "Hole.h"
-#include "Button.h"
-#include "Menu.h"
-#include "Gui.h"
-#include "Game.h"
+#include "Classes/Operator.h"
+#include "Classes/Ball.h"
+#include "Classes/Hole.h"
+#include "Classes/Button.h"
+#include "Classes/Menu.h"
+#include "Classes/Gui.h"
+#include "Classes/Game.h"
 
 
 int main()
