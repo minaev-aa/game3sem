@@ -4,10 +4,10 @@
 float speed_player = 0.1f;
 int wind_x_size = 1000;
 int wind_y_size = 700;
-float rad_ball = 15; //20
+float rad_ball = 15;
 float rad_hole = 20;
 float dt = 0.02f;
-float betta_tormoz = 0.6f; //0.1
+float betta_tormoz = 0.6f; 
 float tormoz_V = 5.0f;
 float time_of_full_beat = 0.7f;
 float max_force_of_beat = 1150;

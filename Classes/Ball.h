@@ -213,62 +213,65 @@ public:
         silka = silka2;
     }
 
+    void colabse_with_black_ball()
+    {
+        std::cout << "BLACK!!!";
+        //(*ball2).del();
+        sf::Event e;
+        window->pollEvent(e);
+        float x;
+        float y;
+        while (e.type != sf::Event::MouseButtonPressed) {
+            while (window->pollEvent(e))
+            {
+                switch (e.type) {
+                case sf::Event::Closed: window->close(); break;
+                case sf::Event::MouseMoved:
+                    x = e.mouseMove.x;
+                    y = e.mouseMove.y;
+                case sf::Event::MouseButtonPressed:
+                    std::vector<float> array1 = { x , y };
+                    std::vector<float> array = { 0, 0 };
+                    set_pos(array1);
+                    set_V(array);
+                    break;
+
+
+                }
+            }
+        }
+    }
+
     int colabse_holes(int New_Score)
     {
         for (Hole hole : *holes)
         {
-            if (hole.ret_pos() != pos)
+            std::vector<float> x1 = pos;
+            std::vector<float> x2 = hole.ret_pos();
+
+            if (x1[0] - x2[0] < rad_hole)
             {
-                std::vector<float> x1 = pos;
-                std::vector<float> x2 = hole.ret_pos();
-
-                if (x1[0] - x2[0] < rad_hole)
+                if (x1[1] - x2[1] < rad_hole)
                 {
-                    if (x1[1] - x2[1] < rad_hole)
+                    if (norm(x1 - x2) < rad_hole)
                     {
-                        if (norm(x1 - x2) < rad_hole)
+                        if ((color) != sf::Color::Black)
                         {
-                            if ((color) != sf::Color::Black)
-                            {
-                                std::cout << "COUTch";
-                                //(silka).erase(ball2);
-                                del();
-                                New_Score++;
-                            }
-                            else
-                            {
-                                std::cout << "BLACK!!!";
-                                //(*ball2).del();
-                                sf::Event e;
-                                window->pollEvent(e);
-                                float x;
-                                float y;
-                                while (e.type != sf::Event::MouseButtonPressed) {
-                                    while (window->pollEvent(e))
-                                    {
-                                        switch (e.type) {
-                                        case sf::Event::Closed: window->close(); break;
-                                        case sf::Event::MouseMoved:
-                                            x = e.mouseMove.x;
-                                            y = e.mouseMove.y;
-                                        case sf::Event::MouseButtonPressed:
-                                            std::vector<float> array1 = { x , y };
-                                            std::vector<float> array = { 0, 0 };
-                                            set_pos(array1);
-                                            set_V(array);
-                                            break;
+                            std::cout << "COUTch";
 
+                            del();
+                            New_Score++;
+                        }
+                        else
+                        {
+                            colabse_with_black_ball();
+                            New_Score--;
 
-                                        }
-                                    }
-                                }
-                                New_Score--;
-
-                            }
                         }
                     }
                 }
             }
+            
         }
         return New_Score;
     }
