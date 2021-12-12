@@ -28,8 +28,23 @@ public:
 
         mouse_pos = std::vector <float>{ -10, -10 };
         gui = new GUI();
+
+        for (int i = -1; i < 2; i++)
+        {
+            for (int j = -1; j < 2; j += 2)
+            {
+                std::cout << field_x_size;
+                std::vector<float> pos_right{ float((wind_x_size + j * field_x_size * 10) / 2 - j * rad_hole), float(wind_y_size / 2 + i * (wind_y_size / 2 - rad_hole)) };
+                Hole hole_right(pos_right);
+                hole_right.set_color(sf::Color::Yellow);
+                holes.push_back(hole_right);
+                Hole hole1(pos_right);
+                hole_right.set_color(sf::Color::Yellow);
+                holes.push_back(hole_right);
+            }
+        }
         std::vector<float> pos1{ float(wind_x_size) / 2, float(wind_y_size) / 2 };
-        Ball ball1(pos1, field, &balls);
+        Ball ball1(pos1, field, &balls, &holes);
         ball1.set_color(sf::Color::Black);
 
         balls.push_back(ball1);
@@ -43,7 +58,7 @@ public:
                 {
                     float x = float(wind_x_size) / 2 - (i + 1) / 2 * rad_ball * 2 + rad_ball + j * 2 * rad_ball;
                     std::vector<float> pos{ x,y };
-                    Ball ball(pos, field, &balls);
+                    Ball ball(pos, field, &balls, &holes);
                     balls.push_back(ball);
 
                 }
@@ -51,7 +66,7 @@ public:
                 {
                     float x = float(wind_x_size) / 2 - (i) / 2 * rad_ball * 2 + j * 2 * rad_ball;
                     std::vector<float> pos{ x,y };
-                    Ball ball(pos, field, &balls);
+                    Ball ball(pos, field, &balls, &holes);
                     balls.push_back(ball);
 
                 }
@@ -59,20 +74,6 @@ public:
             }
         }
 
-        for (int i = -1; i < 2; i++)
-        {
-            for (int j = -1; j < 2; j += 2)
-            {
-                std::cout << field_x_size;
-                std::vector<float> pos_right{ float((wind_x_size + j * field_x_size * 10) / 2 - j * rad_hole), float(wind_y_size / 2 + i * (wind_y_size / 2 - rad_hole)) };
-                Hole hole_right(pos_right, &balls);
-                hole_right.set_color(sf::Color::Yellow);
-                holes.push_back(hole_right);
-                Hole hole1(pos_right, &balls);
-                hole_right.set_color(sf::Color::Yellow);
-                holes.push_back(hole_right);
-            }
-        }
         start_balls = balls;
         line = sf::VertexArray(sf::Lines, 2);
     };
@@ -84,6 +85,7 @@ public:
             for (Ball main_ball : balls)
             {
                 main_ball.move();
+                New_Score = main_ball.colabse_holes(New_Score);
                 new_balls.push_back(main_ball);
                 if (New_Score != 0)
                 {
@@ -105,11 +107,6 @@ public:
                 }
             }
             balls = new_balls;
-            for (Hole main_hole : holes)
-            {
-                New_Score = main_hole.collabse_balls(New_Score);
-
-            }
             window->clear(sf::Color(75, 0, 163));
         }
         window->draw(field);

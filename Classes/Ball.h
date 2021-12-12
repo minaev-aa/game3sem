@@ -1,6 +1,7 @@
 #pragma once
-#include "Operator.h"
+#include "Classes/Operator.h"
 #include "Settings.h"
+#include "Classes/Hole.h"
 
 
 class Ball
@@ -28,6 +29,7 @@ private:
     float field_y1;
     float field_y2;
     std::vector<Ball>* silka;
+    std::vector<Hole>* holes;
 
 
 public:
@@ -48,8 +50,8 @@ public:
         sound[sfxType].setVolume(std::min(volume, 100.f));
         sound[sfxType].play();
     }
-    Ball(std::vector<float> pos, sf::RectangleShape field, std::vector<Ball>* silka) :
-        pos(pos), shape(rad), color(sf::Color::Red), field(field), silka(silka)
+    Ball(std::vector<float> pos, sf::RectangleShape field, std::vector<Ball>* silka, std::vector<Hole>* holes) :
+        pos(pos), shape(rad), color(sf::Color::Red), field(field), silka(silka), holes(holes)
     {
         shape.setFillColor(color);
         shape.setPosition(pos[0] - rad, pos[1] - rad);
@@ -154,6 +156,7 @@ public:
                 }
             }
         }
+
     }
 
     void colapse_ball(Ball ball2)
@@ -208,5 +211,65 @@ public:
     void set_silka(std::vector<Ball>* silka2)
     {
         silka = silka2;
+    }
+
+    int colabse_holes(int New_Score)
+    {
+        for (Hole hole : *holes)
+        {
+            if (hole.ret_pos() != pos)
+            {
+                std::vector<float> x1 = pos;
+                std::vector<float> x2 = hole.ret_pos();
+
+                if (x1[0] - x2[0] < rad_hole)
+                {
+                    if (x1[1] - x2[1] < rad_hole)
+                    {
+                        if (norm(x1 - x2) < rad_hole)
+                        {
+                            if ((color) != sf::Color::Black)
+                            {
+                                std::cout << "COUTch";
+                                //(silka).erase(ball2);
+                                del();
+                                New_Score++;
+                            }
+                            else
+                            {
+                                std::cout << "BLACK!!!";
+                                //(*ball2).del();
+                                sf::Event e;
+                                window->pollEvent(e);
+                                float x;
+                                float y;
+                                while (e.type != sf::Event::MouseButtonPressed) {
+                                    while (window->pollEvent(e))
+                                    {
+                                        switch (e.type) {
+                                        case sf::Event::Closed: window->close(); break;
+                                        case sf::Event::MouseMoved:
+                                            x = e.mouseMove.x;
+                                            y = e.mouseMove.y;
+                                        case sf::Event::MouseButtonPressed:
+                                            std::vector<float> array1 = { x , y };
+                                            std::vector<float> array = { 0, 0 };
+                                            set_pos(array1);
+                                            set_V(array);
+                                            break;
+
+
+                                        }
+                                    }
+                                }
+                                New_Score--;
+
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return New_Score;
     }
 };

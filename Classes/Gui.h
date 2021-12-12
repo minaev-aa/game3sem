@@ -9,7 +9,7 @@ public:
     Menu menu;
 
     GUI() {
-        font.loadFromFile("./Abbieshire.ttf");
+        font.loadFromFile("./PFAgoraSlabPro.ttf");
         player1.points = 0;
         player1.number = 0;
         player1.numberText.setFont(font);
